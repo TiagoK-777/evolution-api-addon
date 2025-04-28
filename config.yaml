@@ -3,6 +3,8 @@ version: "v2.2.3"
 slug: evolutionapi
 description: "API para controle do WhatsApp via HTTP"
 url: "https://github.com/DavidsonGomes/evolution-api"
+webui: "http://[HOST]:[PORT:49152]/manager/"
+watchdog: "http://[HOST]:[PORT:49152]/"
 init: false
 startup: application
 map:
@@ -14,11 +16,11 @@ arch:
 startup: application
 options:
   SERVER_TYPE: http
-  SERVER_HOST: "0.0.0.0"
+  SERVER_HOST: "homeassistant"
   SERVER_PORT: 49152
   TZ: "America/Sao_Paulo"
   DATABASE_PROVIDER: postgresql
-  DATABASE_CONNECTION_URI: 'postgresql://user:pass@postgres:5432/evolution?schema=public'
+  DATABASE_CONNECTION_URI: 'postgresql://user:pass@localhost:5432/evolution?schema=public'
   AUTHENTICATION_API_KEY: minha-senha-secreta
 schema:
   SERVER_TYPE: "str?"

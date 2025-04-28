@@ -6,11 +6,11 @@ if [ -f "$CONFIG" ]; then
   echo "[run.sh] Carregando configuracoes de $CONFIG..."
   # Para cada variável, leia do JSON se existir, senão mantenha o default
   SERVER_TYPE=$(jq -r '.SERVER_TYPE // "http"' "$CONFIG")
-  SERVER_HOST=$(jq -r '.SERVER_HOST // "0.0.0.0"' "$CONFIG")
+  SERVER_HOST=$(jq -r '.SERVER_HOST // "homeassistant"' "$CONFIG")
   SERVER_PORT=$(jq -r '.SERVER_PORT // 49152' "$CONFIG")
   TZ=$(jq -r '.TZ // "America/Sao_Paulo"' "$CONFIG")
   DATABASE_PROVIDER=$(jq -r '.DATABASE_PROVIDER // "postgresql"' "$CONFIG")
-  DATABASE_CONNECTION_URI=$(jq -r '.DATABASE_CONNECTION_URI // "postgresql://user:pass@postgres:5432/evolution?schema=public"' "$CONFIG")
+  DATABASE_CONNECTION_URI=$(jq -r '.DATABASE_CONNECTION_URI // "postgresql://user:pass@localhost:5432/evolution?schema=public"' "$CONFIG")
   AUTHENTICATION_API_KEY=$(jq -r '.AUTHENTICATION_API_KEY // "minha-senha-secreta"' "$CONFIG")
   
   export SERVER_PORT
@@ -81,7 +81,12 @@ fi
 psql --username postgres -c "GRANT ALL PRIVILEGES ON DATABASE evolution TO \"user\";"
 
 # 7) Migrations e API
-export DATABASE_CONNECTION_URI="postgresql://user:pass@localhost:5432/evolution?schema=public"
+#export DATABASE_CONNECTION_URI="postgresql://user:pass@localhost:5432/evolution?schema=public"
+DATABASE_CONNECTION_URI=${DATABASE_CONNECTION_URI}
+
+echo "[run.sh] Sobrescreveu /evolution/.env:"
+cat /evolution/.env
+
 cd /evolution
 ./Docker/scripts/deploy_database.sh
 
