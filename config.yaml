@@ -4,7 +4,6 @@ slug: evolutionapi
 description: "API para controle do WhatsApp via HTTP"
 url: "https://github.com/DavidsonGomes/evolution-api"
 init: false
-host_network: true
 startup: application
 map:
   - data:rw
@@ -13,11 +12,21 @@ map:
 arch:
   - amd64
 startup: application
-environment:
+options:
+  SERVER_TYPE: http
+  SERVER_HOST: "0.0.0.0"
+  SERVER_PORT: 49152
   TZ: "America/Sao_Paulo"
   DATABASE_PROVIDER: postgresql
   DATABASE_CONNECTION_URI: 'postgresql://user:pass@postgres:5432/evolution?schema=public'
-  DATABASE_ENABLED: 'false'
   AUTHENTICATION_API_KEY: minha-senha-secreta
+schema:
+  SERVER_TYPE: "str?"
+  SERVER_HOST: "str?"
+  SERVER_PORT: "int?"
+  TZ: "str?"
+  DATABASE_PROVIDER: "str?"
+  DATABASE_CONNECTION_URI: "str?"
+  AUTHENTICATION_API_KEY: "str?"
 ports:
-  8080/tcp: 8080
+  49152/tcp: 49152

@@ -43,7 +43,7 @@ COPY run.sh /run.sh
 RUN chmod +x /run.sh
 
 # --- Expondo porta da API ---
-EXPOSE 8080
+#EXPOSE 8080
 
 # --- Ponto de entrada: inicia Redis + init DB + start Postgres + migrations + API ---
 ENTRYPOINT ["sh", "/run.sh"]
