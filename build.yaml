@@ -1,2 +1,2 @@
 build_from:
-  amd64: "atendai/evolution-api:latest"
+  amd64: "atendai/evolution-api:v2.2.3"
