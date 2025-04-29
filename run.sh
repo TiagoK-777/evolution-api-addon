@@ -4,15 +4,19 @@ set -eux
 CONFIG="/data/options.json"
 if [ -f "$CONFIG" ]; then
   echo "[run.sh] Carregando configuracoes de $CONFIG..."
-  # Para cada variável, leia do JSON se existir, senão mantenha o default
+  # Para cada variÃ¡vel, leia do JSON se existir, senÃ£o mantenha o default
   SERVER_TYPE=$(jq -r '.SERVER_TYPE // "http"' "$CONFIG")
   SERVER_HOST=$(jq -r '.SERVER_HOST // "homeassistant"' "$CONFIG")
   SERVER_PORT=$(jq -r '.SERVER_PORT // 49152' "$CONFIG")
   TZ=$(jq -r '.TZ // "America/Sao_Paulo"' "$CONFIG")
+  DATABASE_USER=$(jq -r '.DATABASE_USER // "user"' "$CONFIG")
+  DATABASE_PASSWORD=$(jq -r '.DATABASE_PASSWORD // "pass"' "$CONFIG")
   DATABASE_PROVIDER=$(jq -r '.DATABASE_PROVIDER // "postgresql"' "$CONFIG")
   DATABASE_CONNECTION_URI=$(jq -r '.DATABASE_CONNECTION_URI // "postgresql://user:pass@localhost:5432/evolution?schema=public"' "$CONFIG")
   AUTHENTICATION_API_KEY=$(jq -r '.AUTHENTICATION_API_KEY // "minha-senha-secreta"' "$CONFIG")
   
+  export DATABASE_USER
+  export DATABASE_PASSWORD
   export SERVER_PORT
   export SERVER_HOST
   export SERVER_TYPE
@@ -26,7 +30,7 @@ fi
 export SERVER_URL="http://${SERVER_HOST}:${SERVER_PORT}"
 echo "[run.sh] Server URL set to $SERVER_URL"
 
-# 0) Persistência em /data
+# 0) PersistÃªncia em /data
 mkdir -p /data/postgresql /data/redis
 chown -R postgres:postgres /data/postgresql
 chown -R redis:redis     /data/redis
@@ -37,12 +41,12 @@ if [ ! -f "$PGDATA/PG_VERSION" ]; then
   su-exec postgres initdb --auth-local=trust --auth-host=trust
 fi
 
-# 2) Sockets efêmeros
+# 2) Sockets efÃªmeros
 mkdir -p /run/postgresql /run/redis
 chown postgres:postgres /run/postgresql
 chown redis:redis     /run/redis
 
-# 3) Start Redis com persistência
+# 3) Start Redis com persistÃªncia
 echo "[redis] starting..."
 su-exec redis redis-server \
   --daemonize yes \
@@ -59,37 +63,35 @@ echo "[db] starting..."
 su-exec postgres postgres -D "$PGDATA" -c listen_addresses=localhost &
 sleep 2
 
-# 5) Garante role “user”
-psql -v ON_ERROR_STOP=1 --username postgres <<-'EOSQL'
+# 5) Garante role â€œuserâ€
+psql -v ON_ERROR_STOP=1 --username postgres <<EOSQL
 DO
-$$
-  BEGIN
-    IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'user') THEN
-      CREATE ROLE "user" LOGIN PASSWORD 'pass';
-    END IF;
-  END
-$$;
+\$\$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '${DATABASE_USER}') THEN
+    EXECUTE format('CREATE ROLE %I LOGIN PASSWORD %L', '${DATABASE_USER}', '${DATABASE_PASSWORD}');
+  END IF;
+END
+\$\$;
 EOSQL
 
-# 6) Garante DB “evolution”
+# 6) Garante DB â€œevolutionâ€
 if [ "$(psql -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname='evolution'")" != "1" ]; then
   echo "[db] creating evolution..."
-  psql --username postgres -c "CREATE DATABASE evolution OWNER \"user\";"
+  psql --username postgres -c "CREATE DATABASE evolution OWNER \"${DATABASE_USER}\";"
 else
   echo "[db] evolution already exists, skipping."
 fi
-psql --username postgres -c "GRANT ALL PRIVILEGES ON DATABASE evolution TO \"user\";"
+psql --username postgres -c "GRANT ALL PRIVILEGES ON DATABASE evolution TO \"${DATABASE_USER}\";"
+
+echo "database_user: $DATABASE_USER"
+echo "database_password: $DATABASE_PASSWORD"
 
 # 7) Migrations e API
-#export DATABASE_CONNECTION_URI="postgresql://user:pass@localhost:5432/evolution?schema=public"
 DATABASE_CONNECTION_URI=${DATABASE_CONNECTION_URI}
-
-echo "[run.sh] Sobrescreveu /evolution/.env:"
-cat /evolution/.env
 
 cd /evolution
 ./Docker/scripts/deploy_database.sh
 
 echo "[app] exec Node..."
-#exec node dist/main
 exec sh -c 'node dist/main 2>&1 | iconv -f ISO-8859-1 -t UTF-8 -c'
