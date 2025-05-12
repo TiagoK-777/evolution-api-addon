@@ -1,8 +1,8 @@
 name: Evolution API
-version: "v2.2.3-2"
+version: "v2.2.3-3"
 slug: evolutionapi
 description: "API para controle do WhatsApp via HTTP"
-url: "https://github.com/DavidsonGomes/evolution-api"
+url: "https://github.com/EvolutionAPI/evolution-api"
 webui: "http://[HOST]:[PORT:49152]/manager/"
 watchdog: "http://[HOST]:[PORT:49152]/"
 init: false
@@ -25,6 +25,7 @@ options:
   DATABASE_PASSWORD: "pass"
   DATABASE_CONNECTION_URI: 'postgresql://user:pass@localhost:5432/evolution?schema=public'
   AUTHENTICATION_API_KEY: minha-senha-secreta
+  CUSTOM_ENV: DATABASE_SAVE_IS_ON_WHATSAPP_DAYS=1 DATABASE_SAVE_DATA_HISTORIC=false DATABASE_SAVE_DATA_NEW_MESSAGE=false
 schema:
   SERVER_TYPE: "str?"
   SERVER_HOST: "str?"
@@ -35,5 +36,7 @@ schema:
   DATABASE_PASSWORD: "str?"
   DATABASE_CONNECTION_URI: "str?"
   AUTHENTICATION_API_KEY: "str?"
+  CUSTOM_ENV: >-
+    match(^(([A-Z0-9_]+=(\"[^\"]*\"|'[^']*'|[^ ]+))( +[A-Z0-9_]+=(\"[^\"]*\"|'[^']*'|[^ ]+))*)?$)
 ports:
   49152/tcp: 49152

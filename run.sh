@@ -99,6 +99,13 @@ cleanup() {
 trap cleanup SIGTERM SIGINT
 
 # -----------------------------------------------------------------------------
+# Carrega as variáveis do .env, se existir
+# -----------------------------------------------------------------------------
+if [ -f /evolution/.env ]; then
+export $(grep -v '^#' /evolution/.env | xargs)
+fi
+
+# -----------------------------------------------------------------------------
 # Carregamento de configurações
 # -----------------------------------------------------------------------------
 log_info "Carregando configurações de /data/options.json..."
@@ -114,6 +121,22 @@ if [ -f "$CONFIG" ]; then
   DATABASE_PROVIDER=$(jq -r '.DATABASE_PROVIDER // "postgresql"' "$CONFIG")
   DATABASE_CONNECTION_URI=$(jq -r '.DATABASE_CONNECTION_URI // "postgresql://user:pass@localhost:5432/evolution?schema=public"' "$CONFIG")
   AUTHENTICATION_API_KEY=$(jq -r '.AUTHENTICATION_API_KEY // "minha-senha-secreta"' "$CONFIG")
+  
+  # Carrega as variáveis definidas em CUSTOM_ENV
+  CUSTOM_ENV=$(jq -r '.CUSTOM_ENV // ""' "$CONFIG")
+
+	if [ -n "$CUSTOM_ENV" ] && [ "$CUSTOM_ENV" != "" ]; then
+    log_info "Carregando variáveis personalizadas:"
+    for var in $CUSTOM_ENV; do
+      # Separa chave e valor
+      key=$(echo "$var" | cut -d '=' -f 1)
+      value=$(echo "$var" | cut -d '=' -f 2-)
+      
+      # Exporta a variável
+      export "$key"="$value"
+      echo "  - $key=$value"
+    done
+  fi
 fi
 
 export DATABASE_USER
@@ -127,7 +150,13 @@ export DATABASE_CONNECTION_URI
 export AUTHENTICATION_API_KEY
 export SERVER_URL="http://${SERVER_HOST}:${SERVER_PORT}"
 
-log_info "Server URL set to $SERVER_URL"
+# -----------------------------------------------------------------------------
+# Variáveis carregadas
+# -----------------------------------------------------------------------------
+log_info "Variáveis carregadas:"
+env | while read -r line; do
+printf "  - %s\n" "$line"
+done
 
 # -----------------------------------------------------------------------------
 # Preparação de diretórios
@@ -230,8 +259,9 @@ cd /evolution
 echo ""
 echo "┌───────────────────────────────────────────────────────────────────────────────────────┐"
 echo "│ Database USER: $DATABASE_USER"
-echo "│ Database PASS: $DATABASE_PASSWORD"
-echo "│ Database URI: $DATABASE_CONNECTION_URI"
+echo "| Database PASS: $DATABASE_PASSWORD"
+echo "│ API Key Global: $AUTHENTICATION_API_KEY"
+echo "│ Database URL: $DATABASE_CONNECTION_URI"
 echo "│ Server URL: $SERVER_URL"
 echo "└───────────────────────────────────────────────────────────────────────────────────────┘"
 echo ""

@@ -25,8 +25,10 @@ RUN apk update \
        postgresql17-contrib \
        su-exec \
        redis \
+	   curl \
 	   jq \
        ffmpeg bash openssl tzdata \
+	&& curl -fsSL https://raw.githubusercontent.com/EvolutionAPI/evolution-api/main/.env.example -o /evolution/.env \
     && rm -rf /var/cache/apk/*
 
 # Diretório de trabalho (app)
