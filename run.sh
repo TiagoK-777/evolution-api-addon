@@ -230,7 +230,7 @@ cd /evolution
 echo ""
 echo "┌───────────────────────────────────────────────────────────────────────────────────────┐"
 echo "│ Database USER: $DATABASE_USER"
-echo "| Database PASS: $DATABASE_PASSWORD"
+echo "│ Database PASS: $DATABASE_PASSWORD"
 echo "│ Database URL: $DATABASE_CONNECTION_URI"
 echo "│ Server URL: $SERVER_URL"
 echo "└───────────────────────────────────────────────────────────────────────────────────────┘"
