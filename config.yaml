@@ -1,5 +1,5 @@
 name: Evolution API
-version: "v2.2.3-1"
+version: "v2.2.3-2"
 slug: evolutionapi
 description: "API para controle do WhatsApp via HTTP"
 url: "https://github.com/DavidsonGomes/evolution-api"
@@ -7,6 +7,7 @@ webui: "http://[HOST]:[PORT:49152]/manager/"
 watchdog: "http://[HOST]:[PORT:49152]/"
 init: false
 startup: application
+restart: "on-failure"
 map:
   - data:rw
   - data/store:/evolution/store

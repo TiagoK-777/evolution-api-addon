@@ -21,7 +21,9 @@ ENV TZ=America/Sao_Paulo \
 # --- Instala dependências: Postgres, Redis, utilitários e tzdata ---
 RUN apk update \
     && apk add --no-cache \
-       postgresql postgresql-contrib su-exec \
+       postgresql17 \
+       postgresql17-contrib \
+       su-exec \
        redis \
 	   jq \
        ffmpeg bash openssl tzdata \
